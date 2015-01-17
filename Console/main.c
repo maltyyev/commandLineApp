@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <windows.h>
+#include <Windows.h>
 
 #define SIZE 1000
 
@@ -56,8 +56,23 @@ void cd()
 	{
 		printf("wrong path to directory\n");
 		strcpy(path, back_up_path);
+	}
+}
+
+void ls()
+{
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+	hFind = FindFirstFile(path, &FindFileData);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		printf("<empty directory>\n");
 		return;
 	}
+	do
+	printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+	while (FindNextFile(hFind, &FindFileData) != 0);
+	FindClose(hFind);
 }
 
 int  main()
@@ -75,6 +90,11 @@ int  main()
 		if (strcmp(command, "cd") == 0)
 		{
 			cd();
+			continue;
+		}
+		if (strcmp(command, "ls") == 0)
+		{
+			ls();
 			continue;
 		}
 		printf("wrong command\n");
