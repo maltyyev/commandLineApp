@@ -70,9 +70,24 @@ void ls()
 		return;
 	}
 	do
-	printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+		printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 	while (FindNextFile(hFind, &FindFileData) != 0);
 	FindClose(hFind);
+}
+
+void rm()
+{
+	char* parameter = strtok(NULL, "");
+	if (parameter == NULL)
+		return;
+	strcpy(back_up_path, path);
+	if (strlen(back_up_path) > 0)
+		strcat(back_up_path, "\\");
+	strcat(back_up_path, parameter);
+	if (unlink(back_up_path) == -1)
+	{
+		printf("can't remove the file, check its name and access\n");
+	}
 }
 
 int  main()
@@ -95,6 +110,11 @@ int  main()
 		if (strcmp(command, "ls") == 0)
 		{
 			ls();
+			continue;
+		} 
+		if (strcmp(command, "rm") == 0)
+		{
+			rm();
 			continue;
 		}
 		printf("wrong command\n");
