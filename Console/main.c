@@ -2,60 +2,65 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
+#include <tchar.h>
+#include <wchar.h>
 #include <Windows.h>
+#include <locale.h>
 
 #define SIZE 1000
 
-char back_up_path[SIZE];
-char path[SIZE];
-char input[SIZE];
+wchar_t buff1[SIZE];
+wchar_t buff2[SIZE];
+wchar_t path[SIZE];
 
-void cd_back()
+bool cd_back(wchar_t* path)
 {
-	if (strlen(path) == 0)
-	{
-		printf("you are in the root directory\n");
-		return;
-	}
-	char* last_backslash = strrchr(path, '\\');
+	wchar_t* last_backslash = wcsrchr(path, '\\');
 	if (last_backslash)
+	{
 		*last_backslash = '\0';
-	else
-		path[0] = '\0';
+		return true;
+	}
+	return false;
+}
+
+bool join_pathes(wchar_t* path1, wchar_t* path2)
+{
+	int path2_len = wcslen(path2);
+	while (path2_len >= 3 && path2[0] == '.' && path2[1] == '.' && path2[2] == '\\')
+	{
+		if (!cd_back(path1))
+			return false;
+		path2 += 3;
+		path2_len -= 3;
+	}
+	if (path2_len == 0)
+		return true;
+	if (path2_len >= 2 && path2[0] == '.' && path2[1] == '.')
+		return cd_back(path1);
+	if (wcschr(path2, ':') != NULL)
+		path1[0] = '\0';
+	if (wcslen(path1) > 0)
+		wcscat(path1, _T("\\"));
+	wcscat(path1, path2);
+	if (path1[wcslen(path1) - 1] == '\\')
+		path1[wcslen(path1) - 1] = '\0';
+	return true;
 }
 
 void cd()
 {
-	char* parameter = strtok(NULL, "");
+	wchar_t* parameter = wcstok(NULL, _T(""));
 	if (parameter == NULL)
-		return;
-	int parameter_len = strlen(parameter);
-	while (parameter_len >= 3 && parameter[0] == '.' && parameter[1] == '.' && parameter[2] == '\\')
 	{
-		cd_back();
-		parameter += 3;
-		parameter_len -= 3;
-	}
-	if (parameter_len == 0)
-		return;
-	if (parameter_len >= 2 && parameter[0] == '.' && parameter[1] == '.')
-	{
-		cd_back();
+		wprintf(_T("the command need more parameters\n"));
 		return;
 	}
-	strcpy(back_up_path, path);
-	if (strrchr(parameter, ':') != NULL)
-		path[0] = '\0';
-	if (strlen(path) > 0)
-		strcat(path, "\\");
-	strcat(path, parameter);
-	if (path[strlen(path) - 1] == '\\')
-		path[strlen(path) - 1] = '\0';
-	if (access(path, 0) != 0)
+	wcscpy(buff1, path);
+	if (!join_pathes(path, parameter) || _waccess(path, 0))
 	{
-		printf("wrong path to directory\n");
-		strcpy(path, back_up_path);
+		wprintf(_T("wrong path\n"));
+		wcscpy(path, buff1);
 	}
 }
 
@@ -75,49 +80,77 @@ void ls()
 	FindClose(hFind);
 }
 
+void mk()
+{
+	wchar_t* parameter = wcstok(NULL, _T(""));
+	if (parameter == NULL)
+	{
+		wprintf(_T("the command need more parameters\n"));
+		return;
+	}
+	wcscpy(buff1, path);
+	if (!join_pathes(buff1, parameter))
+	{
+		wprintf(_T("can't create the file, check its path\n"));
+		return;
+	}
+	FILE*file = _wfopen(buff1, _T("a"));
+	if (file == NULL)
+		wprintf(_T("can't create the file, check its name and access\n"));
+	else
+		fclose(file);
+}
+
 void rm()
 {
-	char* parameter = strtok(NULL, "");
+	wchar_t* parameter = wcstok(NULL, _T(""));
 	if (parameter == NULL)
-		return;
-	strcpy(back_up_path, path);
-	if (strlen(back_up_path) > 0)
-		strcat(back_up_path, "\\");
-	strcat(back_up_path, parameter);
-	if (unlink(back_up_path) == -1)
 	{
-		printf("can't remove the file, check its name and access\n");
+		wprintf(_T("the command need more parameters\n"));
+		return;
+	}
+	wcscpy(buff1, path);
+	if (!join_pathes(buff1, parameter))
+	{
+		wprintf(_T("can't remove the file, check its path\n"));
+		return;
+	}
+	if (_wunlink(buff1) == -1)
+	{
+		wprintf(_T("can't remove the file, check its name and access\n"));
 	}
 }
 
 int  main()
 {
-	strcpy(path, "c:");
+	
+	setlocale(LC_ALL, "russian_russia.866");
+	wchar_t input[SIZE];
+	wcscpy(path, _T("c:"));
 	while (true)
 	{
-		printf("%s> ", path);
-		gets(input);
-		char* command = strtok(input, " ");
+		wprintf(_T("%s> "), path);
+		_getws(input);
+		wchar_t* command = wcstok(input, _T(" "));
 		if (command == NULL)
 			continue;
-		if (strcmp(command, "exit") == 0)
+		if (wcscmp(command, _T("exit")) == 0)
 			break;
-		if (strcmp(command, "cd") == 0)
-		{
+		if (wcscmp(command, _T("cd")) == 0)
 			cd();
-			continue;
-		}
-		if (strcmp(command, "ls") == 0)
+		else if (wcscmp(command, _T("..")) == 0)
 		{
+			if (!cd_back(path))
+				wprintf(_T("can't go over the root directory\n"));
+		}
+		else if (wcscmp(command, _T("ls")) == 0)
 			ls();
-			continue;
-		} 
-		if (strcmp(command, "rm") == 0)
-		{
+		else if (wcscmp(command, _T("rm")) == 0)
 			rm();
-			continue;
-		}
-		printf("wrong command\n");
+		else if (wcscmp(command, _T("mk")) == 0)
+			mk();
+		else
+			wprintf(_T("wrong command\n"));
 	}
 	return 1;
 }
