@@ -166,6 +166,7 @@ void cp()
 
 int  main()
 {
+
 	setlocale(LC_ALL, "russian_russia.866");
 	wchar_t input[SIZE];
 	wcscpy(path, _T("c:"));
@@ -193,6 +194,25 @@ int  main()
 			mk();
 		else if (wcscmp(command, _T("cp")) == 0)
 			cp();
+		else if (wcscmp(command, _T("help")) == 0)
+		{
+			wprintf(_T("Usage examples:\n"));
+			wprintf(_T("cd ..    the same as    cd ..\\\n"));
+			wprintf(_T("cd ..\\.. and similar commands\n"));
+			wprintf(_T("cd directory    the same as    cd directory\\\n"));
+			wprintf(_T("cd dir1\\dir2\n"));
+			wprintf(_T("cd ..\\..\\dir1\\dir2\n\n"));
+			wprintf(_T("ls\n\n"));
+			wprintf(_T("rm file\n"));
+			wprintf(_T("rm dir\\file\n"));
+			wprintf(_T("rm ..\\dir\\file\n\n"));
+			wprintf(_T("mk file\n"));
+			wprintf(_T("mk ..\\dir\\file\n\n"));
+			wprintf(_T("cp file1 file2\n"));
+			wprintf(_T("cp ..\\file1 ..\\dir\\file2\n"));
+			wprintf(_T("cp file_with_spaces\"file2\n"));
+			wprintf(_T("cp ..\\dir_with_spaces\\file_with_spaces\"dir\\file2\n\n"));
+		}
 		else
 			wprintf(_T("wrong command\n"));
 	}
