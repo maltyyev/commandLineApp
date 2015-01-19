@@ -66,16 +66,19 @@ void cd()
 
 void ls()
 {
+	wcscpy(buff1, path);
+	wcscat(buff1, _T("\\*"));
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
-	hFind = FindFirstFile(path, &FindFileData);
+	hFind = FindFirstFile(buff1, &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		printf("<empty directory>\n");
+		wprintf(_T("<empty or invalid directory>\n"));
 		return;
 	}
 	do
-	printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+	if (wcscmp(FindFileData.cFileName, _T(".")) != 0 && wcscmp(FindFileData.cFileName, _T("..")) != 0)
+		wprintf(_T("%s\n"), FindFileData.cFileName);
 	while (FindNextFile(hFind, &FindFileData) != 0);
 	FindClose(hFind);
 }
