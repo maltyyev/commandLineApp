@@ -75,7 +75,7 @@ void ls()
 		return;
 	}
 	do
-		printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+	printf("%s %d\n", FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 	while (FindNextFile(hFind, &FindFileData) != 0);
 	FindClose(hFind);
 }
@@ -121,9 +121,51 @@ void rm()
 	}
 }
 
+void cp()
+{
+	wchar_t* parameters = wcstok(NULL, _T(""));
+	if (parameters == NULL)
+	{
+		wprintf(_T("the command need more parameters\n"));
+		return;
+	}
+	wchar_t* delim;
+	if (wcschr(parameters, '\"') != NULL)
+		delim = _T("\"");
+	else
+		delim = _T(" ");
+	wchar_t* parameter1 = wcstok(parameters, delim);
+	if (parameter1 == NULL)
+	{
+		wprintf(_T("the command need more parameters\n"));
+		return;
+	}
+	wchar_t* parameter2 = wcstok(NULL, _T(""));
+	if (parameter2 == NULL)
+	{
+		wprintf(_T("the command need more parameters\n"));
+		return;
+	}
+	wcscpy(buff1, path);
+	if (!join_pathes(buff1, parameter1))
+	{
+		wprintf(_T("can't copy the file, check its path\n"));
+		return;
+	}
+	wcscpy(buff2, path);
+	if (!join_pathes(buff2, parameter2))
+	{
+		wprintf(_T("can't copy the file, check the path of destination\n"));
+		return;
+	}
+	if (!CopyFile(buff1, buff2, false))
+	{
+		wprintf(_T("can't copy the file, check parameters names and access\n"));
+	}
+}
+
 int  main()
 {
-	
 	setlocale(LC_ALL, "russian_russia.866");
 	wchar_t input[SIZE];
 	wcscpy(path, _T("c:"));
@@ -149,6 +191,8 @@ int  main()
 			rm();
 		else if (wcscmp(command, _T("mk")) == 0)
 			mk();
+		else if (wcscmp(command, _T("cp")) == 0)
+			cp();
 		else
 			wprintf(_T("wrong command\n"));
 	}
