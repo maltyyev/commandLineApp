@@ -24,7 +24,7 @@ bool cd_back(wchar_t* path)
 	return false;
 }
 
-bool join_pathes(wchar_t* path1, wchar_t* path2)
+bool join_paths(wchar_t* path1, wchar_t* path2)
 {
 	int path2_len = wcslen(path2);
 	while (path2_len >= 3 && path2[0] == '.' && path2[1] == '.' && path2[2] == '\\')
@@ -57,7 +57,7 @@ void cd()
 		return;
 	}
 	wcscpy(buff1, path);
-	if (!join_pathes(path, parameter) || _waccess(path, 0))
+	if (!join_paths(path, parameter) || _waccess(path, 0))
 	{
 		wprintf(_T("wrong path\n"));
 		wcscpy(path, buff1);
@@ -92,7 +92,7 @@ void mk()
 		return;
 	}
 	wcscpy(buff1, path);
-	if (!join_pathes(buff1, parameter))
+	if (!join_paths(buff1, parameter))
 	{
 		wprintf(_T("can't create the file, check its path\n"));
 		return;
@@ -113,7 +113,7 @@ void rm()
 		return;
 	}
 	wcscpy(buff1, path);
-	if (!join_pathes(buff1, parameter))
+	if (!join_paths(buff1, parameter))
 	{
 		wprintf(_T("can't remove the file, check its path\n"));
 		return;
@@ -150,13 +150,13 @@ void cp()
 		return;
 	}
 	wcscpy(buff1, path);
-	if (!join_pathes(buff1, parameter1))
+	if (!join_paths(buff1, parameter1))
 	{
 		wprintf(_T("can't copy the file, check its path\n"));
 		return;
 	}
 	wcscpy(buff2, path);
-	if (!join_pathes(buff2, parameter2))
+	if (!join_paths(buff2, parameter2))
 	{
 		wprintf(_T("can't copy the file, check the path of destination\n"));
 		return;
